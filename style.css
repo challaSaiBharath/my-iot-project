@@ -1,0 +1,46 @@
+:root{
+  --bg1:#f7f8fc;
+  --panel:#ffffff;
+  --accent:#0d6efd;
+}
+/* timetable row delete button full row effect */
+.timetable-row-delete {
+  transition: all 0.25s ease;
+  background-color: #ffebeb !important;
+}
+
+/* layout */
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;background:linear-gradient(135deg,var(--bg1),#eef2ff);color:#0f1724}
+.app-header{background:var(--panel);border-bottom:1px solid rgba(15,23,36,0.06);display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 16px}
+.app-title{font-size:18px;font-weight:700}
+.app-body{min-height:calc(100vh - 64px);display:flex}
+.sidebar{width:240px;background:linear-gradient(180deg,#0f1724,#0b1224);color:#e6eef8;padding-top:18px}
+.sidebar .nav-link{color:rgba(255,255,255,0.9);padding:10px 14px;border-radius:8px;margin-bottom:8px;display:block;text-decoration:none}
+.sidebar .nav-link.active,.sidebar .nav-link:hover{background:linear-gradient(90deg,var(--accent),#00b894);color:white;transform:translateX(6px)}
+main{padding:24px}
+
+/* Dashboard panels grid */
+.panel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:18px}
+.panel{background:var(--panel);border-radius:12px;padding:16px;box-shadow:0 10px 30px rgba(16,24,40,0.06)}
+.panel h4{margin:0 0 8px 0;font-size:14px}
+.panel .big{font-size:28px;font-weight:700}
+
+/* announcements layout */
+.announcement-layout{display:grid;grid-template-columns:320px 1fr;gap:16px}
+.room-switch{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:#f8fafc;margin-bottom:8px}
+
+/* announcement history */
+#announcementHistory{max-height:250px;overflow:auto;padding:8px;background:#fff;border-radius:8px;border:1px solid #eee}
+
+/* side panel / timetable */
+.side-panel{position:fixed;right:-520px;top:64px;width:520px;height:calc(100vh - 64px);background:var(--panel);box-shadow:-10px 0 40px rgba(2,6,23,0.08);transition:right .28s ease;padding:16px;z-index:50}
+.side-panel.open{right:0}
+.side-panel-header{border-bottom:1px solid rgba(0,0,0,0.04);padding-bottom:8px}
+.timetable-row{display:flex;justify-content:space-between;padding:10px;border-bottom:1px dashed #f0f0f0}
+
+/* rooms list */
+.room-card{display:flex;justify-content:space-between;align-items:center;padding:10px;background:#fff;border-radius:8px;margin-bottom:8px;box-shadow:0 2px 8px rgba(2,6,23,0.03)}
+
+/* small */
+.btn-small{padding:4px 8px;font-size:13px}
+.hidden{display:none}
