@@ -1,6 +1,7 @@
 /* ============================================================
-   IoT Announcement System – script.js (clean + fully wired)
-   Matches your HTML/CSS exactly. Works with Firebase RTDB.
+   IoT Announcement System – script.js (fully wired & robust)
+   Matches your posted HTML/CSS exactly. Uses Firebase RTDB.
+   Adds auto-loader for Firebase Storage (uploads work).
    ============================================================ */
 
 /* ---------------- Firebase Config (yours) ---------------- */
@@ -18,8 +19,25 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+// We’ll load Storage SDK dynamically so you don’t edit HTML.
+let storage = null;
+loadFirebaseStorage()
+  .then(() => { storage = firebase.storage(); })
+  .catch(() => { console.warn("Firebase Storage SDK could not be loaded. Media uploads disabled."); });
+
+function loadFirebaseStorage() {
+  return new Promise((resolve, reject) => {
+    if (firebase.storage) return resolve();
+    const s = document.createElement("script");
+    s.src = "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js";
+    s.onload = () => resolve();
+    s.onerror = () => reject();
+    document.head.appendChild(s);
+  });
+}
+
 /* ---------------- Shortcuts & utils ---------------- */
-const $ = (sel) => document.querySelector(sel);
+const $  = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
 function toast(msg, kind = "info") {
@@ -27,7 +45,7 @@ function toast(msg, kind = "info") {
   t.className = "toast-lite";
   t.textContent = msg;
   if (kind === "success") t.style.background = "#16a34a";
-  if (kind === "error") t.style.background = "#ef4444";
+  if (kind === "error")   t.style.background = "#ef4444";
   document.body.appendChild(t);
   requestAnimationFrame(() => t.classList.add("show"));
   setTimeout(() => t.remove(), 2600);
@@ -35,22 +53,23 @@ function toast(msg, kind = "info") {
 
 const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const todayName = () => DAYS[new Date().getDay()];
-const isSunday = () => new Date().getDay() === 0;
+const isSunday  = () => new Date().getDay() === 0;
+const nowISO    = () => new Date().toISOString();
 
 /* ---------------- Sections (match HTML) ---------------- */
 const sections = {
-  dashboard: $("#dashboardSection"),
+  dashboard:    $("#dashboardSection"),
   announcement: $("#announcementSection"),
-  rooms: $("#roomsSection"),
-  status: $("#statusSection"),
-  logs: $("#logsSection")
+  rooms:        $("#roomsSection"),
+  status:       $("#statusSection"),
+  logs:         $("#logsSection")
 };
 let currentPage = "dashboard";
 
 /* ---------------- Global caches ---------------- */
-let roomsCache = {};     // /rooms
-let statusCache = {};    // /status
-let logsCache = {};      // /logs
+let roomsCache     = {}; // /rooms
+let statusCache    = {}; // /status
+let logsCache      = {}; // /logs
 let timetableCache = {}; // /timetable
 
 /* ---------------- Navigation wiring ---------------- */
@@ -99,21 +118,21 @@ $("#userBtn")?.addEventListener("click", () => {
 /* ---------------- Realtime listeners (RTDB) ---------------- */
 db.ref("/rooms").on("value", (s) => {
   roomsCache = s.val() || {};
-  if (currentPage === "dashboard") renderDashboardCounts();
+  if (currentPage === "dashboard")    renderDashboardCounts();
   if (currentPage === "announcement") renderRoomToggles();
-  if (currentPage === "rooms") renderRoomList();
+  if (currentPage === "rooms")        renderRoomList();
 }, onRtdbError);
 
 db.ref("/status").on("value", (s) => {
   statusCache = s.val() || {};
   if (currentPage === "dashboard") renderDashboardCounts();
-  if (currentPage === "status") renderStatus();
+  if (currentPage === "status")    renderStatus();
 }, onRtdbError);
 
 db.ref("/logs").on("value", (s) => {
   logsCache = s.val() || {};
   if (currentPage === "announcement") renderAnnHistory();
-  if (currentPage === "logs") renderLogs();
+  if (currentPage === "logs")         renderLogs();
 }, onRtdbError);
 
 db.ref("/timetable").on("value", (s) => {
@@ -125,18 +144,24 @@ db.ref("/timetable").on("value", (s) => {
 }, onRtdbError);
 
 function onRtdbError(err) {
-  console.warn("Firebase warning:", err?.message || err);
+  // Helpful surfacing of permission or connection errors
+  const msg = (err && err.message) ? err.message : String(err || "Unknown RTDB error");
+  console.warn("Firebase warning:", msg);
+  if (/permission_denied/i.test(msg)) {
+    toast("Firebase rules blocked this action. Use open rules while testing.", "error");
+  }
 }
 
-/* ---------------- Dashboard ---------------- */
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
 function renderDashboardCounts() {
   const displaysOnline = Object.keys(statusCache?.rooms || {}).filter(id => statusCache.rooms[id]?.online).length;
-  const roomsCount = Object.keys(roomsCache || {}).length;
+  const roomsCount     = Object.keys(roomsCache || {}).length;
 
   $("#displayCount") && ($("#displayCount").innerText = String(displaysOnline));
-  $("#activeRooms") && ($("#activeRooms").innerText = String(roomsCount));
+  $("#activeRooms")  && ($("#activeRooms").innerText  = String(roomsCount));
 }
-
 $("#refreshDisplay")?.addEventListener("click", renderDashboardCounts);
 $("#refreshRooms")?.addEventListener("click", renderDashboardCounts);
 $("#checkNextEvent")?.addEventListener("click", computeNextEvent);
@@ -215,10 +240,12 @@ function computeNextEvent() {
   label.innerText = next ? `${next.subject} ${next.start} (${next.roomNo || "-"})` : "No upcoming events";
 }
 
-/* ---------------- Announcements ---------------- */
-const textMsg = $("#textMsg");
-const textPreview = $("#textPreview");
-const sendTextBtn = $("#sendText");
+/* ============================================================
+   ANNOUNCEMENTS
+   ============================================================ */
+const textMsg      = $("#textMsg");
+const textPreview  = $("#textPreview");
+const sendTextBtn  = $("#sendText");
 const clearTextBtn = $("#clearText");
 
 textMsg?.addEventListener("input", () => {
@@ -234,31 +261,25 @@ sendTextBtn?.addEventListener("click", () => {
   const msg = (textMsg?.value || "").trim();
   if (!msg) return toast("Please type a message", "error");
 
-  // target rooms based on toggles (if none ON, send to all rooms)
-  const toggled = $$("#roomSwitchContainer input[type=checkbox]:checked").map(x => x.dataset.room);
-  const targets = toggled.length ? toggled : Object.keys(roomsCache || {});
+  const targets = getSelectedRoomsOrAll();
   if (targets.length === 0) return toast("No rooms available", "error");
 
-  const payload = {
-    type: "text",
-    message: msg,
-    timestamp: new Date().toISOString(),
-    duration: 20
-  };
+  const payload = { type: "text", message: msg, timestamp: nowISO(), duration: 20 };
 
-  // write to each room and log
-  targets.forEach(r => {
-    db.ref(`/rooms/${r}/currentAnnouncement`).set(payload)
-      .catch(e => console.warn("Write error:", e?.message || e));
-    db.ref(`/logs/${r}/${Date.now()}`).set(`Text: ${msg}`)
-      .catch(e => console.warn("Log error:", e?.message || e));
-  });
-
-  toast("Announcement sent!", "success");
-  textMsg.value = "";
-  textPreview.textContent = "Preview will appear here...";
-  renderAnnHistory();
+  batchSendToRooms(payload, targets)
+    .then(() => {
+      toast("Text announcement sent!", "success");
+      textMsg.value = "";
+      textPreview.textContent = "Preview will appear here...";
+      renderAnnHistory();
+    })
+    .catch((e) => toast(e?.message || "Send failed", "error"));
 });
+
+function getSelectedRoomsOrAll() {
+  const toggled = $$("#roomSwitchContainer input[type=checkbox]:checked").map(x => x.dataset.room);
+  return toggled.length ? toggled : Object.keys(roomsCache || {});
+}
 
 function renderRoomToggles() {
   const container = $("#roomSwitchContainer");
@@ -308,7 +329,143 @@ function renderAnnHistory() {
   list.innerHTML = html;
 }
 
-/* ---------------- Rooms ---------------- */
+/* ---- Audio / Image / Video buttons (now working) ---- */
+const btnAudio  = $("#audioRec");
+const btnImage  = $("#uploadImage");
+const btnVideo  = $("#uploadVideo");
+
+// Create a reusable hidden file input
+function pickFile(accept) {
+  return new Promise((resolve) => {
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = accept;
+    inp.style.display = "none";
+    document.body.appendChild(inp);
+    inp.onchange = () => {
+      const f = inp.files && inp.files[0] ? inp.files[0] : null;
+      document.body.removeChild(inp);
+      resolve(f);
+    };
+    inp.click();
+  });
+}
+
+// Batch write helper
+function batchSendToRooms(payload, roomIds) {
+  const ops = [];
+  roomIds.forEach(r => {
+    ops.push(db.ref(`/rooms/${r}/currentAnnouncement`).set(payload));
+    ops.push(db.ref(`/logs/${r}/${Date.now()}`).set(`${payload.type}: ${payload.message || payload.mediaUrl || ''}`));
+  });
+  return Promise.allSettled(ops);
+}
+
+// Upload helper
+async function uploadToStorage(fileOrBlob, folder) {
+  if (!storage) {
+    toast("Storage not loaded. Check internet / CSP.", "error");
+    throw new Error("Storage not initialized");
+  }
+  const safeName = (fileOrBlob.name || `blob_${Date.now()}`).replace(/[^\w.\-]+/g, "_");
+  const path = `${folder}/${Date.now()}_${safeName}`;
+  const ref  = storage.ref().child(path);
+  await ref.put(fileOrBlob);
+  return await ref.getDownloadURL();
+}
+
+/* --- Audio recorder toggle --- */
+let mediaRecorder = null;
+let recChunks = [];
+let recording = false;
+
+btnAudio?.addEventListener("click", async () => {
+  try {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast("Microphone not supported in this browser", "error");
+      return;
+    }
+
+    if (!recording) {
+      // start recording
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => e.data && recChunks.push(e.data);
+      mediaRecorder.onstop = async () => {
+        try {
+          const blob = new Blob(recChunks, { type: "audio/webm" });
+          const url  = await uploadToStorage(blob, "ann_audio");
+          const targets = getSelectedRoomsOrAll();
+          if (targets.length === 0) { toast("No rooms available", "error"); return; }
+          const payload = { type: "audio", message: "Audio Announcement", mediaUrl: url, timestamp: nowISO(), duration: 20 };
+          await batchSendToRooms(payload, targets);
+          toast("Audio announcement sent!", "success");
+          renderAnnHistory();
+        } catch (e) {
+          console.error(e);
+          toast("Audio upload/send failed", "error");
+        }
+      };
+      mediaRecorder.start();
+      recording = true;
+      btnAudio.classList.remove("btn-outline-primary");
+      btnAudio.classList.add("btn-danger");
+      btnAudio.innerHTML = `<i class="bi bi-stop-fill"></i> Stop`;
+      toast("Recording… click Stop when done");
+    } else {
+      // stop recording
+      mediaRecorder?.stop();
+      recording = false;
+      btnAudio.classList.remove("btn-danger");
+      btnAudio.classList.add("btn-outline-primary");
+      btnAudio.innerHTML = `<i class="bi bi-mic"></i> Record Audio`;
+    }
+  } catch (e) {
+    console.error(e);
+    toast("Mic access blocked. Allow microphone permission.", "error");
+  }
+});
+
+/* --- Image upload --- */
+btnImage?.addEventListener("click", async () => {
+  try {
+    const f = await pickFile("image/*");
+    if (!f) return;
+    const url = await uploadToStorage(f, "ann_image");
+    const targets = getSelectedRoomsOrAll();
+    if (targets.length === 0) { toast("No rooms available", "error"); return; }
+    const payload = { type: "image", message: "Image Announcement", mediaUrl: url, timestamp: nowISO(), duration: 20 };
+    await batchSendToRooms(payload, targets);
+    toast("Image announcement sent!", "success");
+    renderAnnHistory();
+  } catch (e) {
+    console.error(e);
+    toast("Image upload/send failed", "error");
+  }
+});
+
+/* --- Video upload --- */
+btnVideo?.addEventListener("click", async () => {
+  try {
+    const f = await pickFile("video/*");
+    if (!f) return;
+    const url = await uploadToStorage(f, "ann_video");
+    const targets = getSelectedRoomsOrAll();
+    if (targets.length === 0) { toast("No rooms available", "error"); return; }
+    const payload = { type: "video", message: "Video Announcement", mediaUrl: url, timestamp: nowISO(), duration: 30, mute: false };
+    await batchSendToRooms(payload, targets);
+    toast("Video announcement sent!", "success");
+    renderAnnHistory();
+  } catch (e) {
+    console.error(e);
+    toast("Video upload/send failed", "error");
+  }
+});
+
+/* ============================================================
+   ROOMS (Add + Delete both work)
+   ============================================================ */
 $("#addRoomBtn")?.addEventListener("click", () => {
   const id = $("#roomIdInput")?.value?.trim();
   if (!id) return toast("Enter Room Number", "error");
@@ -338,6 +495,7 @@ function renderRoomList() {
     return;
   }
 
+  // Render items with inline delete buttons (doesn’t change your HTML layout)
   list.innerHTML = keys.map(id => {
     const m = roomsCache[id]?.meta || {};
     const online = m.online
@@ -346,13 +504,31 @@ function renderRoomList() {
     return `
       <li class="list-group-item d-flex justify-content-between align-items-center">
         <span><strong>${m.name || id}</strong> <span class="text-muted">(${id})</span></span>
-        ${online}
+        <span class="d-flex align-items-center gap-2">
+          ${online}
+          <button class="btn btn-sm btn-outline-danger" data-action="del" data-room="${id}">
+            <i class="bi bi-trash"></i>
+          </button>
+        </span>
       </li>
     `;
   }).join("");
+
+  // hook inline delete clicks
+  $$("#roomList [data-action='del']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.room;
+      if (!confirm(`Delete room ${id}?`)) return;
+      db.ref(`/rooms/${id}`).remove()
+        .then(() => toast(`Room ${id} deleted`, "success"))
+        .catch(e => toast(e?.message || "Delete failed", "error"));
+    });
+  });
 }
 
-/* ---------------- Status ---------------- */
+/* ============================================================
+   STATUS
+   ============================================================ */
 function renderStatus() {
   const displayStatus = $("#displayStatus");
   const speakerStatus = $("#speakerStatus");
@@ -373,7 +549,9 @@ function renderStatus() {
 $("#refreshDisplayStatus")?.addEventListener("click", renderStatus);
 $("#refreshSpeakerStatus")?.addEventListener("click", renderStatus);
 
-/* ---------------- Logs ---------------- */
+/* ============================================================
+   LOGS
+   ============================================================ */
 function renderLogs() {
   const panel = $("#logsPanel");
   if (!panel) return;
@@ -404,7 +582,9 @@ $("#clearLogs")?.addEventListener("click", () => {
     .catch(e => toast(e?.message || "Failed to clear logs", "error"));
 });
 
-/* ---------------- Initial show ---------------- */
+/* ============================================================
+   INITIAL RENDER
+   ============================================================ */
 showSection("dashboard");
 renderDashboardCounts();
 fillTodayTimetable();
