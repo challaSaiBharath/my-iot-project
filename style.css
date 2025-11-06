@@ -1,98 +1,862 @@
-:root{
-  --bg1:#f6f8fc; --bg2:#e9edf5;
-  --card:#ffffff; --primary:#0d6efd; --text:#1d2330;
-  --muted:#6b7280; --accent:#eef2ff; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+/* =========================================================
+   IoT Announcement System - Global Styles
+   ---------------------------------------------------------
+   Palette:
+   --primary: #0d6efd
+   --primary-600: #0b5ed7
+   --bg: #f5f7fb
+   --ink: #1f2a37
+   --muted: #6b7280
+   --success: #16a34a
+   --warning: #f59e0b
+   --info: #0ea5e9
+   --danger: #ef4444
+   --card: #ffffff
+   --sidedark: #1e2227
+   --sidedark-600: #171b1f
+   ========================================================= */
+
+:root {
+    --primary: #0d6efd;
+    --primary-600: #0b5ed7;
+    --bg: #f5f7fb;
+    --ink: #1f2a37;
+    --muted: #6b7280;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --info: #0ea5e9;
+    --danger: #ef4444;
+    --card: #ffffff;
+    --sidedark: #1e2227;
+    --sidedark-600: #171b1f;
+    --shadow-sm: 0 2px 8px rgba(15, 23, 42, .06);
+    --shadow-md: 0 6px 18px rgba(15, 23, 42, .08);
+    --radius: 14px;
 }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  color:var(--text);
-  background: linear-gradient(135deg,var(--bg1),var(--bg2));
-  min-height:100vh;
+* {
+    box-sizing: border-box
 }
 
-.app-header{
-  height:64px; background:#fff; border-bottom:1px solid #e5e7eb;
-  position:sticky; top:0; z-index:10;
-}
-.app-header h1{ font-size:20px; }
-
-.app-shell{ display:flex; align-items:stretch; min-height:calc(100vh - 64px); }
-
-.app-sidebar{
-  width:240px; background:#1e2430; color:#cbd5e1;
-  padding:12px; position:sticky; top:64px; height:calc(100vh - 64px);
-}
-.app-sidebar .nav-link{
-  color:#cbd5e1; border-radius:10px; margin-bottom:6px; padding:10px 12px;
-  transition:.15s ease; display:flex; align-items:center;
-}
-.app-sidebar .nav-link:hover{ background:#2b3342; color:#fff;}
-.app-sidebar .nav-link.active{ background:var(--primary); color:#fff; }
-
-.app-main{
-  flex:1; max-width:100%; padding:24px;
-}
-.panel{
-  background:var(--card); border:1px solid #e5e7eb; border-radius:14px;
-  padding:16px; margin-bottom:16px; box-shadow:0 6px 20px rgba(0,0,0,.05);
+html,
+body {
+    height: 100%;
 }
 
-.grid-cards{ display:grid; grid-template-columns: repeat(5,minmax(190px,1fr)); gap:12px; }
-@media (max-width:1100px){ .grid-cards{ grid-template-columns: repeat(2,1fr); } }
-@media (max-width:640px){ .grid-cards{ grid-template-columns: 1fr; } }
-
-.card-kpi{
-  background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:14px;
-  display:flex; align-items:center; gap:12px;
-}
-.kpi-icon{
-  width:42px; height:42px; display:grid; place-items:center;
-  border-radius:10px; background:var(--accent); color:var(--primary);
-  font-size:20px;
-}
-.kpi-body h6{ margin:0; font-size:13px; color:#6b7280;}
-.kpi-body div{ font-weight:700; font-size:22px;}
-
-.badge-online{ display:inline-flex; align-items:center; gap:6px; font-size:12px; color:#16a34a;}
-.badge-online::before{ content:""; width:8px; height:8px; background:#16a34a; border-radius:999px; display:inline-block; }
-
-.switch{
-  position:relative; width:46px; height:24px; display:inline-block;
-}
-.switch input{ display:none; }
-.switch .track{
-  position:absolute; inset:0; background:#e5e7eb; border-radius:999px; transition:.2s;
-}
-.switch .thumb{
-  position:absolute; top:3px; left:3px; width:18px; height:18px; background:#fff;
-  border-radius:999px; transition:.2s; box-shadow:0 2px 4px rgba(0,0,0,.15);
-}
-.switch input:checked + .track{ background:#3b82f6; }
-.switch input:checked + .track .thumb{ transform:translateX(22px); }
-
-.list-room{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; margin-bottom:8px; background:#fff;
+body {
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    color: var(--ink);
+    background: radial-gradient(1200px 800px at -20% -20%, #eaf2ff 0%, rgba(234, 242, 255, 0) 60%), radial-gradient(1000px 700px at 120% -10%, #ffe9e3 0%, rgba(255, 233, 227, 0) 55%), linear-gradient(180deg, #f9fbff 0%, #f3f6fb 100%);
+    background-attachment: fixed;
 }
 
-.ann-tabs{
-  display:flex; gap:8px; flex-wrap:wrap;
+
+/* Smooth animations */
+
+@media (prefers-reduced-motion: no-preference) {
+     :root {
+        scroll-behavior: smooth;
+    }
+    .fade-in {
+        animation: fadeIn .35s ease both;
+    }
+    .slide-up {
+        animation: slideUp .35s ease both;
+    }
+    .pulse {
+        animation: pulse 2.2s ease infinite;
+    }
 }
-.ann-tab{
-  padding:8px 12px; border:1px dashed #d1d5db; border-radius:999px; cursor:pointer; user-select:none;
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px)
+    }
+    to {
+        opacity: 1;
+        transform: none
+    }
 }
-.ann-tab.active{ background:var(--primary); color:#fff; border-color:transparent; }
 
-.preview{
-  border:1px dashed #d1d5db; border-radius:12px; min-height:120px; display:grid; place-items:center; color:#6b7280;
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px)
+    }
+    to {
+        opacity: 1;
+        transform: none
+    }
 }
 
-.small-muted{ color:var(--muted); font-size:12px; }
+@keyframes pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(13, 110, 253, .35)
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(13, 110, 253, .0)
+    }
+}
 
-.tt-tabs{ display:flex; gap:8px; flex-wrap:wrap; }
-.tt-tabs .btn{ border-radius:999px; }
 
-.table thead th{ background:#f9fafb; }
+/* =========================================
+   Header
+   ========================================= */
+
+header.navbar {
+    backdrop-filter: saturate(1.2) blur(6px);
+}
+
+header .navbar-brand {
+    letter-spacing: .2px;
+}
+
+header .btn {
+    border-radius: 10px;
+}
+
+
+/* =========================================
+   Sidebar
+   ========================================= */
+
+.sidebar {
+    background: linear-gradient(180deg, var(--sidedark) 0%, var(--sidedark-600) 100%);
+    border-right: 1px solid rgba(255, 255, 255, .06);
+    position: sticky;
+    top: 0;
+    min-height: 100vh;
+    box-shadow: inset -1px 0 0 rgba(255, 255, 255, .04);
+}
+
+.sidebar h5 {
+    color: #e5e7eb;
+    letter-spacing: 1px;
+}
+
+.sidebar .nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #c7ced6;
+    padding: 10px 12px;
+    border-radius: 10px;
+    transition: all .18s ease;
+    font-weight: 600;
+}
+
+.sidebar .nav .nav-link:hover {
+    background: rgba(255, 255, 255, .06);
+    color: #fff;
+    transform: translateX(2px);
+}
+
+.sidebar .nav .nav-link.active {
+    background: linear-gradient(90deg, rgba(13, 110, 253, .25), rgba(13, 110, 253, .05));
+    color: #fff;
+    outline: 1px solid rgba(13, 110, 253, .25);
+}
+
+
+/* =========================================
+   Main content container
+   ========================================= */
+
+#mainContent {
+    background: rgba(255, 255, 255, .72);
+    border-radius: 18px;
+    box-shadow: var(--shadow-md);
+    margin: 20px;
+    padding: 22px;
+}
+
+
+/* =========================================
+   Cards, panels
+   ========================================= */
+
+.card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.card .card-body {
+    padding: 18px 18px;
+}
+
+.card .card-title {
+    font-weight: 700;
+    color: #334155;
+}
+
+
+/* Lift on hover */
+
+.card:hover {
+    transform: translateY(-2px);
+    transition: transform .15s ease, box-shadow .15s ease;
+    box-shadow: 0 10px 22px rgba(10, 15, 35, .10);
+}
+
+
+/* =========================================
+   Buttons
+   ========================================= */
+
+.btn {
+    border-radius: 12px;
+    transition: all .15s ease;
+}
+
+.btn:active {
+    transform: translateY(1px) scale(.99);
+}
+
+.btn-outline-primary:hover {
+    color: #fff !important;
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+
+/* Utility color buttons */
+
+.btn-success {
+    box-shadow: 0 6px 16px rgba(22, 163, 74, .18);
+}
+
+.btn-outline-secondary {
+    color: #374151;
+}
+
+
+/* Icon button spacing */
+
+.btn i {
+    margin-right: 6px;
+}
+
+
+/* =========================================
+   Tables
+   ========================================= */
+
+.table {
+    --bs-table-bg: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table thead th {
+    font-weight: 700;
+    color: #475569;
+    border-bottom: 2px solid #e5e7eb !important;
+}
+
+.table tbody td {
+    color: #374151;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background: #f7fbff;
+}
+
+
+/* Compact table utilities */
+
+.table-compact thead th,
+.table-compact tbody td {
+    padding: .55rem .7rem;
+    font-size: .92rem;
+}
+
+
+/* =========================================
+   Announcement area
+   ========================================= */
+
+#announcementSection .form-control {
+    border-radius: 12px;
+    border-color: #e5e7eb;
+}
+
+#announcementSection .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, .12);
+}
+
+#previewBox,
+#textPreview {
+    background: linear-gradient(180deg, #f8fbff, #f2f6fb);
+    border: 1px dashed #cfe0ff;
+    border-radius: 12px;
+}
+
+
+/* Switch-style room toggles */
+
+#roomSwitchContainer .form-check-input {
+    width: 48px;
+    height: 26px;
+    cursor: pointer;
+}
+
+#roomSwitchContainer .form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+#roomSwitchContainer .form-check-label {
+    margin-left: 6px;
+    font-weight: 600;
+    color: #334155;
+}
+
+
+/* History list */
+
+#announcementHistory .list-group-item {
+    border: 0;
+    background: #f8fafc;
+    margin-bottom: 8px;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .05);
+}
+
+
+/* =========================================
+   Rooms page
+   ========================================= */
+
+#roomsSection .input-group .form-control {
+    border-radius: 12px;
+}
+
+#roomList .list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 0;
+    border-radius: 12px !important;
+    background: #fff;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+}
+
+#roomList .badge {
+    border-radius: 10px;
+}
+
+
+/* =========================================
+   Status page
+   ========================================= */
+
+#statusSection .card h6 {
+    font-weight: 700;
+    color: #334155;
+}
+
+#displayStatus,
+#speakerStatus {
+    padding: .6rem .8rem;
+    background: #f8fafc;
+    border: 1px dashed #e2e8f0;
+    border-radius: 10px;
+}
+
+
+/* =========================================
+   Logs panel
+   ========================================= */
+
+#logsPanel {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    background: #0b1220;
+    color: #c9e0ff;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, .08);
+}
+
+#logsPanel .log-line {
+    padding: .35rem .6rem;
+    border-bottom: 1px dashed rgba(255, 255, 255, .06);
+}
+
+#logsPanel .log-line:last-child {
+    border-bottom: 0;
+}
+
+.log-success {
+    color: #86efac;
+}
+
+.log-warn {
+    color: #fde68a;
+}
+
+.log-error {
+    color: #fecaca;
+}
+
+
+/* =========================================
+   Header badges & utilities
+   ========================================= */
+
+.badge.live {
+    background: radial-gradient(circle at 30% 30%, #22c55e, #16a34a);
+    color: #fff;
+    padding: .45rem .6rem;
+    border-radius: 100px;
+    box-shadow: 0 8px 20px rgba(22, 163, 74, .25);
+}
+
+
+/* =========================================
+   Form controls
+   ========================================= */
+
+.form-control,
+.form-select {
+    border-radius: 12px;
+    border-color: #e5e7eb;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, .12);
+}
+
+
+/* =========================================
+   Utilities
+   ========================================= */
+
+.soft-shadow {
+    box-shadow: var(--shadow-sm);
+}
+
+.rounded-12 {
+    border-radius: 12px;
+}
+
+.rounded-16 {
+    border-radius: 16px;
+}
+
+.text-ink {
+    color: var(--ink);
+}
+
+.text-muted2 {
+    color: var(--muted);
+}
+
+
+/* Custom hover grow */
+
+.hover-grow {
+    transition: transform .15s ease;
+}
+
+.hover-grow:hover {
+    transform: translateY(-2px)
+}
+
+
+/* Toolbar spacing */
+
+.toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+
+/* =========================================
+   Timetable modal custom table styles
+   ========================================= */
+
+#timetableModal .modal-content {
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+}
+
+#timetableModal .modal-header {
+    border-radius: 16px 16px 0 0;
+}
+
+#timetableModal table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#timetableModal thead th {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-bottom: 2px solid #e2e8f0 !important;
+    font-weight: 700;
+}
+
+#timetableModal tbody tr:hover {
+    background: #f8fafc;
+}
+
+
+/* =========================================
+   Tooltips (fallback simple)
+   ========================================= */
+
+[data-tip] {
+    position: relative;
+}
+
+[data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    background: #111827;
+    color: #fff;
+    font-size: .78rem;
+    padding: .35rem .55rem;
+    border-radius: 8px;
+    white-space: nowrap;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .18);
+    opacity: .95;
+}
+
+
+/* =========================================
+   Progress / Empty / Skeleton states
+   ========================================= */
+
+.skeleton {
+    background: linear-gradient(90deg, #f4f6fa 25%, #eaeef6 37%, #f4f6fa 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.2s ease-in-out infinite;
+    border-radius: 8px;
+    min-height: 14px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 100% 0;
+    }
+    100% {
+        background-position: 0 0;
+    }
+}
+
+.empty {
+    text-align: center;
+    padding: 18px;
+    color: #9aa4b2;
+    border: 1px dashed #e5e7eb;
+    border-radius: 12px;
+    background: #fafcff;
+}
+
+
+/* =========================================
+   Alerts / helpers
+   ========================================= */
+
+.alert-lite {
+    background: #eef6ff;
+    color: #0b5ed7;
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+    padding: .75rem 1rem;
+}
+
+
+/* =========================================
+   Responsive tweaks
+   ========================================= */
+
+@media (max-width: 1200px) {
+    #mainContent {
+        margin: 16px;
+        padding: 18px;
+    }
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        width: 220px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    #mainContent {
+        margin: 10px;
+        padding: 14px;
+    }
+    header .navbar-brand {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card .card-body {
+        padding: 14px;
+    }
+    .table {
+        font-size: .9rem;
+    }
+    .btn {
+        border-radius: 10px;
+    }
+}
+
+
+/* =========================================
+   Fancy headers & separators
+   ========================================= */
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.section-title:before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 0 6px rgba(13, 110, 253, .12);
+}
+
+
+/* =========================================
+   Toast (minimal)
+   ========================================= */
+
+.toast-lite {
+    position: fixed;
+    z-index: 9999;
+    right: 16px;
+    bottom: 16px;
+    background: #111827;
+    color: #fff;
+    padding: .75rem 1rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    transition: all .2s ease;
+}
+
+.toast-lite.show {
+    opacity: .98;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+
+/* =========================================
+   Inline badges / tags
+   ========================================= */
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: .25rem .5rem;
+    font-size: .78rem;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #3730a3;
+    border: 1px solid #e0e7ff;
+}
+
+.tag.success {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+.tag.warn {
+    background: #fffbeb;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+.tag.info {
+    background: #eff6ff;
+    color: #1e40af;
+    border-color: #bfdbfe;
+}
+
+
+/* =========================================
+   Header CTA mini indicators
+   ========================================= */
+
+.header-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: .4rem .6rem;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+}
+
+
+/* =========================================
+   Badges for room online/offline
+   ========================================= */
+
+.badge-online {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+    padding: .2rem .5rem;
+    border-radius: 999px;
+}
+
+.badge-offline {
+    background: #fef2f2;
+    color: #7f1d1d;
+    border: 1px solid #fecaca;
+    padding: .2rem .5rem;
+    border-radius: 999px;
+}
+
+
+/* =========================================
+   Hoverable rows
+   ========================================= */
+
+.row-hover {
+    cursor: pointer;
+}
+
+.row-hover:hover {
+    background: #f8fafc;
+}
+
+
+/* =========================================
+   Elevations helpers
+   ========================================= */
+
+.elev-0 {
+    box-shadow: none
+}
+
+.elev-1 {
+    box-shadow: var(--shadow-sm)
+}
+
+.elev-2 {
+    box-shadow: var(--shadow-md)
+}
+
+
+/* =========================================
+   Header gradient line
+   ========================================= */
+
+header.navbar:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #60a5fa, #34d399, #f59e0b, #60a5fa);
+    background-size: 300% 100%;
+    animation: gradientLine 8s linear infinite;
+}
+
+@keyframes gradientLine {
+    0% {
+        background-position: 0% 50%
+    }
+    100% {
+        background-position: 300% 50%
+    }
+}
+
+
+/* =========================================
+   Floating quick action (optional)
+   ========================================= */
+
+.fab {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(13, 110, 253, .3);
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease;
+    z-index: 50;
+}
+
+.fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px rgba(13, 110, 253, .34);
+}
+
+
+/* =========================================
+   Empty state illustration container
+   ========================================= */
+
+.illustration {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    border-radius: 16px;
+    background: radial-gradient(600px 300px at 120% -40%, rgba(13, 110, 253, .12), transparent 60%), radial-gradient(800px 300px at -20% -100%, rgba(16, 185, 129, .12), transparent 60%), #fff;
+    border: 1px dashed #e5e7eb;
+    color: #64748b;
+    text-align: center;
+    padding: 18px;
+}
+
+
+/* =========================================
+   Link buttons and subtle anchors
+   ========================================= */
+
+.link-btn {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.link-btn:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================
+   End of stylesheet
+   ========================================= */
